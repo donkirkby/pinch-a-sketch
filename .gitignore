@@ -16,6 +16,9 @@ gen/
 local.properties
 .settings
 
+# backups
+*~
+
 # Eclipse project files
 .classpath
 .project
