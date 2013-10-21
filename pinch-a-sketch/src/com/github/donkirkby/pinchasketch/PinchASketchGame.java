@@ -20,28 +20,30 @@ public class PinchASketchGame implements ApplicationListener {
     private TextureRegion region;
     private Image image;
     private ShapeRenderer shapes;
-    private int radius = 128;
 
     @Override
     public void create() {		
-        //		float w = Gdx.graphics.getWidth();
-        //		float h = Gdx.graphics.getHeight();
-        int tempWidth = 512;
-        int tempHeight = 256;
+        int width = Gdx.graphics.getWidth();
+        int height = Gdx.graphics.getHeight();
 
         boolean keepAspectRatio = true;
-        stage = new Stage(tempWidth, tempHeight, keepAspectRatio);
+        stage = new Stage(width, height, keepAspectRatio);
         Gdx.input.setInputProcessor(stage);
 
         /* We're going to draw to the FrameBuffer, which holds the contents
          * for the region, which is positioned by the Image, which is controlled
          * by the Stage.
          */
-        frameBuffer = new FrameBuffer(Format.RGB565, tempWidth, tempHeight, false);
+        frameBuffer = new FrameBuffer(Format.RGB565, width, height, false);
         region = new TextureRegion(frameBuffer.getColorBufferTexture());
         region.flip(false, true);
         image = new Image(region);
         stage.addActor(image);
+
+        frameBuffer.begin();
+        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+        frameBuffer.end();
 
         float halfTapSquareSize = 5;
         float tapCountInterval = 0.4f;
@@ -54,9 +56,13 @@ public class PinchASketchGame implements ApplicationListener {
                 maxFlingDelay) {
 
             @Override
-            public void tap(InputEvent event, float x, float y,
-                    int count, int button) {
-                addCircle();
+            public void pan(
+                    InputEvent event, 
+                    float x, 
+                    float y,
+                    float deltaX, 
+                    float deltaY) {
+                addLine(x, y, deltaX, deltaY);
             }
         });
 
@@ -67,15 +73,13 @@ public class PinchASketchGame implements ApplicationListener {
     /**
      * Just a simple demonstration of how to draw to the frameBuffer.
      */
-    private void addCircle() {
+    private void addLine(float x, float y, float deltaX, float deltaY) {
         frameBuffer.begin();
-        shapes.begin(ShapeType.Circle);
-        shapes.setColor(Color.RED);
-        shapes.circle(128, 128, radius);
+        shapes.begin(ShapeType.Line);
+        shapes.setColor(Color.BLACK);
+        shapes.line(x - deltaX, y - deltaY, x, y);
         shapes.end();
         frameBuffer.end();
-
-        radius /= 2;
     }
 
     @Override
